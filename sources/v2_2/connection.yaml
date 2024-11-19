@@ -1,4 +1,5 @@
 # This file was automatically generated
 name: v2_2
 type: csv
-options: {}
+options:
+  options: skip=1

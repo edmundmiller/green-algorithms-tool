@@ -1,3 +1,4 @@
+index,,,,in gCO2e/kWh,,"Country, Region or World",
 location,continentName,countryName,regionName,carbonIntensity,Type,source,comments
 WORLD,World,Any,Any,475,World,https://www.iea.org/reports/global-energy-co2-status-report-2019/emissions,Data from 2019
 TW,Asia,China,Taiwan,509,Region,https://energypedia.info/wiki/Energy_Transition_in_Taiwan,
