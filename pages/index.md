@@ -23,12 +23,12 @@ To understand how each parameter impacts your carbon footprint, check out the fo
 
 ---
 
-<Dropdown name=core_type title="Type of cores">
-    <DropdownOption valueLabel="CPU" value="CPU" />
+<Dropdown name=core_type title="Type of cores" multiple=true>
+    <DropdownOption valueLabel="CPU" value="CPU" default/>
     <DropdownOption valueLabel="GPU" value="GPU" />
-    <DropdownOption value="Both" />
 </Dropdown>
 
+<!-- TODO Slider? -->
 <TextInput
     name=number_of_cores
     title="Number of cores"
@@ -36,11 +36,12 @@ To understand how each parameter impacts your carbon footprint, check out the fo
 />
 
 ```sql current_models
-select model from v2_2.providers_hardware
+select type,model from v2_2.providers_hardware
+where type in ${inputs.core_type.value}
 ```
 
-<Dropdown name=core_model title="Model" data={current_models}     value=model
-/>
+<!-- TODO Not showing all of the  -->
+<Dropdown name=core_model title="Model" data={current_models} value=model/>
 
 ---
 
