@@ -21,6 +21,16 @@ The following CPUs are commonly used in computing workloads, with their typical 
 | Core i3-10320 | 8 |
 | Xeon X3430 | 7 |
 
+```sql cpu_pdc
+select model,TDP_per_core from v2_2.TDP_cpu
+```
+
+<BarChart 
+    data={cpu_pdc}
+    x=model
+    y=TDP_per_core
+/>
+
 # GPU Power Draw Comparison
 
 Graphics Processing Units (GPUs) typically have higher power requirements:
