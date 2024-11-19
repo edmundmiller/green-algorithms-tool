@@ -7,13 +7,13 @@ title: Green Algorithms Calculator
 To understand how each parameter impacts your carbon footprint, check out the formula below and the [methods article](https://onlinelibrary.wiley.com/doi/10.1002/advs.202100707)
 
 ### Runtime (HH:MM)
-<Dropdown name=runtime title="Hours">
+<Dropdown name=runtime_hours title="Hours">
 <DropdownOption valueLabel="1 Hours" value=1 />
 <DropdownOption valueLabel="2 Hours" value=2 />
 <DropdownOption valueLabel="3 Hours" value=3 />
 </Dropdown>
 
-<Dropdown name=runtime title="Minutes">
+<Dropdown name=runtime_minutes title="Minutes">
 <DropdownOption valueLabel="1 min" value=1 />
 <DropdownOption valueLabel="2 min" value=2 />
 <DropdownOption valueLabel="3 min" value=3 />
@@ -106,31 +106,34 @@ select
   countryName,
   carbonIntensity 
 from v2_2.CI_aggregated
-where countryName = '${inputs.compute_location}'
+where countryName = '${inputs.compute_location.value}'
 ```
 
 ```sql power_usage
 select 
   tdp,
   model
-from v2_2.providers_hardware 
-where model = '${inputs.core_model}'
+from v2_2.TDP_cpu -- TODO Support GPU
+where model = '${inputs.core_model.value}'
 ```
 
-{#if inputs.runtime && inputs.number_of_cores && power_usage.length > 0 && carbon_intensity.length > 0}
+{#if inputs.runtime_hours && inputs.number_of_cores && power_usage.length > 0 && carbon_intensity.length > 0}
 
-  {#let 
-    runtime_hours = inputs.runtime,
-    cores = inputs.number_of_cores,
-    tdp = power_usage[0].tdp,
-    carbon_intensity = carbon_intensity[0].carbonIntensity,
-    
-    -- Calculate energy in kWh
-    energy = (runtime_hours * cores * tdp) / 1000,
-    
-    -- Calculate carbon footprint in kg CO2e
-    carbon = (energy * carbon_intensity) / 1000
-  }
+```sql energy
+
+-- runtime_hours = inputs.runtime_hours,
+-- cores = inputs.number_of_cores,
+-- tdp = power_usage[0].tdp,
+-- carbon_intensity = carbon_intensity[0].carbonIntensity,
+
+-- Calculate energy in kWh
+(inputs.runtime_hours * inputscores * tdp) / 1000,
+```
+
+```sql carbon
+-- Calculate carbon footprint in kg CO2e
+carbon = (energy * carbon_intensity) / 1000
+```
 
   ## Results
 
@@ -152,7 +155,5 @@ where model = '${inputs.core_model}'
   - Carbon sequestered by <Value value={carbon*0.017} format="number" decimals=1 /> trees in a year
   - Equivalent to driving <Value value={carbon/0.2} format="number" decimals=1 /> km in an average car
   - Or flying <Value value={carbon/0.1} format="number" decimals=1 /> km in an airplane
-
-  {/let}
 
 {/if}
