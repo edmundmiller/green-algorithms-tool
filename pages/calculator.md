@@ -121,7 +121,7 @@ where model = '${inputs.core_model.value}'
 
 ```sql energy
 select 
-  (${inputs.runtime_hours} * ${inputs.number_of_cores} * ${power_usage[0].tdp}) / 1000 as energy_kwh
+  (${inputs.runtime_hours} * ${inputs.number_of_cores} * ${power_usage[0].tdp} * 1.0) / 1000 as energy_kwh
 ```
 
 ```sql carbon
