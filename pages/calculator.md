@@ -120,19 +120,14 @@ where model = '${inputs.core_model.value}'
 {#if inputs.runtime_hours && inputs.number_of_cores && power_usage.length > 0 && carbon_intensity.length > 0}
 
 ```sql energy
-
--- runtime_hours = inputs.runtime_hours,
--- cores = inputs.number_of_cores,
--- tdp = power_usage[0].tdp,
--- carbon_intensity = carbon_intensity[0].carbonIntensity,
-
--- Calculate energy in kWh
-(inputs.runtime_hours * inputscores * tdp) / 1000,
+select 
+  (${inputs.runtime_hours} * ${inputs.number_of_cores} * ${power_usage[0].tdp}) / 1000 as energy_kwh
 ```
 
 ```sql carbon
--- Calculate carbon footprint in kg CO2e
-carbon = (energy * carbon_intensity) / 1000
+select 
+  (energy_kwh * ${carbon_intensity[0].carbonIntensity}) / 1000 as carbon_footprint 
+from energy
 ```
 
   ## Results
