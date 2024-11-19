@@ -101,8 +101,58 @@ value=countryName
 
 ---
 
-<!-- TODO Carbon footprint -->
-<!-- TODO Energy needed -->
-<!-- TODO Carbon sequestration -->
-<!-- TODO in a passenger car -->
-<!-- TODO on a flight Paris-Longdon -->
+```sql carbon_intensity
+select 
+  countryName,
+  carbonIntensity 
+from v2_2.CI_aggregated
+where countryName = '${inputs.compute_location}'
+```
+
+```sql power_usage
+select 
+  tdp,
+  model
+from v2_2.providers_hardware 
+where model = '${inputs.core_model}'
+```
+
+{#if inputs.runtime && inputs.number_of_cores && power_usage.length > 0 && carbon_intensity.length > 0}
+
+  {#let 
+    runtime_hours = inputs.runtime,
+    cores = inputs.number_of_cores,
+    tdp = power_usage[0].tdp,
+    carbon_intensity = carbon_intensity[0].carbonIntensity,
+    
+    -- Calculate energy in kWh
+    energy = (runtime_hours * cores * tdp) / 1000,
+    
+    -- Calculate carbon footprint in kg CO2e
+    carbon = (energy * carbon_intensity) / 1000
+  }
+
+  ## Results
+
+  <BigValue 
+    value={carbon}
+    title="Carbon Footprint"
+    subtitle="kg CO₂e"
+    decimals={2}
+  />
+
+  <BigValue
+    value={energy}
+    title="Energy Consumption"
+    subtitle="kWh"
+    decimals={2}
+  />
+
+  ### Environmental Impact
+  - Carbon sequestered by <Value value={carbon*0.017} format="number" decimals=1 /> trees in a year
+  - Equivalent to driving <Value value={carbon/0.2} format="number" decimals=1 /> km in an average car
+  - Or flying <Value value={carbon/0.1} format="number" decimals=1 /> km in an airplane
+
+  {/let}
+
+{/if}
