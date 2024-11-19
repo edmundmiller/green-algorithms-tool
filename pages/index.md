@@ -1,56 +1,169 @@
 ---
-title: Welcome to Evidence
+title: Green Algorithms Calculator
+# TODO Support links
+# http://calculator.green-algorithms.org//?runTime_hour=12&runTime_min=0&appVersion=v2.2&locationContinent=Europe&locationCountry=Austria&locationRegion=AT&coreType=CPU&numberCPUs=12&CPUmodel=Xeon%20E5-2683%20v4&memory=64&platformType=localServer
 ---
 
-<Details title='How to edit this page'>
+## Details about your algorithm
 
-  This page can be found in your project at `/pages/index.md`. Make a change to the markdown file and save it to see the change take effect in your browser.
-</Details>
+To understand how each parameter impacts your carbon footprint, check out the formula below and the [methods article](https://onlinelibrary.wiley.com/doi/10.1002/advs.202100707)
 
-```sql categories
-  select
-      category
-  from needful_things.orders
-  group by category
-```
-
-<Dropdown data={categories} name=category value=category>
-    <DropdownOption value="%" valueLabel="All Categories"/>
+### Runtime (HH:MM)
+<Dropdown name=runtime_hours title="Hours">
+<DropdownOption valueLabel="1 Hours" value=1 />
+<DropdownOption valueLabel="2 Hours" value=2 />
+<DropdownOption valueLabel="3 Hours" value=3 />
 </Dropdown>
 
-<Dropdown name=year>
-    <DropdownOption value=% valueLabel="All Years"/>
-    <DropdownOption value=2019/>
-    <DropdownOption value=2020/>
-    <DropdownOption value=2021/>
+<Dropdown name=runtime_minutes title="Minutes">
+<DropdownOption valueLabel="1 min" value=1 />
+<DropdownOption valueLabel="2 min" value=2 />
+<DropdownOption valueLabel="3 min" value=3 />
 </Dropdown>
 
-```sql orders_by_category
-  select 
-      date_trunc('month', order_datetime) as month,
-      sum(sales) as sales_usd,
-      category
-  from needful_things.orders
-  where category like '${inputs.category.value}'
-  and date_part('year', order_datetime) like '${inputs.year.value}'
-  group by all
-  order by sales_usd desc
-```
+---
 
-<BarChart
-    data={orders_by_category}
-    title="Sales by Month, {inputs.category.label}"
-    x=month
-    y=sales_usd
-    series=category
+<Dropdown name=core_type title="Type of cores">
+    <DropdownOption valueLabel="CPU" value="CPU" />
+    <DropdownOption valueLabel="GPU" value="GPU" />
+    <DropdownOption value="Both" />
+</Dropdown>
+
+<TextInput
+    name=number_of_cores
+    title="Number of cores"
+    defaultValue="12"
 />
 
-## What's Next?
-- [Connect your data sources](settings)
-- Edit/add markdown files in the `pages` folder
-- Deploy your project with [Evidence Cloud](https://evidence.dev/cloud)
+```sql current_models
+select model from v2_2.providers_hardware
+```
 
-## Get Support
-- Message us on [Slack](https://slack.evidence.dev/)
-- Read the [Docs](https://docs.evidence.dev/)
-- Open an issue on [Github](https://github.com/evidence-dev/evidence)
+<Dropdown name=core_model title="Model" data={current_models}     value=model
+/>
+
+---
+
+<TextInput
+    name="memory"
+    title="Memory (GB)"
+    defaultValue="64"
+/>
+
+---
+
+## Platform Configuration
+
+<Dropdown
+name="platform_type"
+title="Platform Type"
+>
+    <DropdownOption valueLabel="Cloud Computing" value="cloud" />
+    <DropdownOption valueLabel="Personal computer" value="personal" />
+    <DropdownOption valueLabel="Local Server" value="server" />
+</Dropdown>
+
+<!-- {#if inputs.platform_type.value === 'cloud'}
+TODO Cloud selection
+{/if} -->
+
+```sql location_country
+select countryName from v2_2.CI_aggregated
+-- TODO Select region and then country
+```
+
+<Dropdown
+name=compute_location
+title="Select location"
+data={location_country}
+value=countryName
+/>
+
+<br/>
+
+<ButtonGroup name=real_cpu_usage title="Do you know the real usage factor of your CPU?" display="tabs">
+    <ButtonGroupItem valueLabel="Yes" value=true />
+    <ButtonGroupItem valueLabel="No" value=false default />
+</ButtonGroup>
+
+<ButtonGroup name=pue title="Do you know the Power Usage Efficiency (PUE) of your local data centre?" display="tabs">
+    <ButtonGroupItem valueLabel="Yes" value=true />
+    <ButtonGroupItem valueLabel="No" value=false default />
+</ButtonGroup>
+
+
+<ButtonGroup name=pragmatic_scaling_factor title="Do you want to use a Pragmatic Scaling Factor?" display="tabs">
+    <ButtonGroupItem valueLabel="Yes" value=true />
+    <ButtonGroupItem valueLabel="No" value=false default />
+</ButtonGroup>
+
+<!-- TODO App version?-->
+
+---
+
+```sql carbon_intensity
+select 
+  countryName,
+  carbonIntensity 
+from v2_2.CI_aggregated
+where countryName = '${inputs.compute_location.value}'
+```
+
+```sql power_usage
+select 
+  tdp,
+  model
+from v2_2.TDP_cpu -- TODO Support GPU
+where model = '${inputs.core_model.value}'
+```
+
+---
+
+{#if inputs.runtime_hours && inputs.number_of_cores && power_usage.length > 0 && carbon_intensity.length > 0}
+
+```sql energy
+select 
+  (${inputs.runtime_hours.value} * ${inputs.number_of_cores} * tdp * 1.0) / 1000 as energy_kwh
+from 
+${power_usage}
+```
+
+```sql carbon
+select 
+  (energy_kwh * ${carbon_intensity[0].carbonIntensity}) / 1000 as carbon_footprint 
+from ${energy}
+```
+
+  ## Results
+
+  <BigValue 
+    data={carbon}
+    value=carbon_footprint
+    title="Carbon Footprint"
+    subtitle="kg CO₂e"
+    decimals={2}
+  />
+
+  <BigValue
+    data={energy}
+    value=energy_kwh
+    title="Energy Consumption"
+    subtitle="kWh"
+    decimals={2}
+  />
+
+### Environmental Impact
+
+```sql environment_impact
+select
+(carbon_footprint * 0.017) as sequestered,
+(carbon_footprint * 0.2) as driving,
+(carbon_footprint * 0.1) as flying,
+from ${carbon};
+```
+
+  - Carbon sequestered by <Value data={environment_impact} value=sequestered format="number" decimals=1 /> trees in a year
+  - Equivalent to driving <Value data={environment_impact} value=driving format="number" decimals=1 /> km in an average car
+  - Or flying <Value data={environment_impact} value=flying format="number" decimals=1 /> km in an airplane
+
+{/if}
