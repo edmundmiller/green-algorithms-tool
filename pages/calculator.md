@@ -30,10 +30,8 @@ To understand how each parameter impacts your carbon footprint, check out the fo
 <TextInput
     name=number_of_cores
     title="Number of cores"
-    defaultValue=12
+    defaultValue="12"
 />
-
-Selected: {inputs.text_input4}
 
 ```sql current_models
 select model from v2_2.providers_hardware
@@ -117,38 +115,53 @@ from v2_2.TDP_cpu -- TODO Support GPU
 where model = '${inputs.core_model.value}'
 ```
 
+---
+
 {#if inputs.runtime_hours && inputs.number_of_cores && power_usage.length > 0 && carbon_intensity.length > 0}
 
 ```sql energy
 select 
-  (${inputs.runtime_hours} * ${inputs.number_of_cores} * ${power_usage[0].tdp} * 1.0) / 1000 as energy_kwh
+  (${inputs.runtime_hours.value} * ${inputs.number_of_cores} * tdp * 1.0) / 1000 as energy_kwh
+from 
+${power_usage}
 ```
 
 ```sql carbon
 select 
   (energy_kwh * ${carbon_intensity[0].carbonIntensity}) / 1000 as carbon_footprint 
-from energy
+from ${energy}
 ```
 
   ## Results
 
   <BigValue 
-    value={carbon}
+    data={carbon}
+    value=carbon_footprint
     title="Carbon Footprint"
     subtitle="kg CO₂e"
     decimals={2}
   />
 
   <BigValue
-    value={energy}
+    data={energy}
+    value=energy_kwh
     title="Energy Consumption"
     subtitle="kWh"
     decimals={2}
   />
 
-  ### Environmental Impact
-  - Carbon sequestered by <Value value={carbon*0.017} format="number" decimals=1 /> trees in a year
-  - Equivalent to driving <Value value={carbon/0.2} format="number" decimals=1 /> km in an average car
-  - Or flying <Value value={carbon/0.1} format="number" decimals=1 /> km in an airplane
+### Environmental Impact
+
+```sql environment_impact
+select
+(carbon_footprint * 0.017) as sequestered,
+(carbon_footprint * 0.2) as driving,
+(carbon_footprint * 0.1) as flying,
+from ${carbon};
+```
+
+  - Carbon sequestered by <Value data={environment_impact} value=sequestered format="number" decimals=1 /> trees in a year
+  - Equivalent to driving <Value data={environment_impact} value=driving format="number" decimals=1 /> km in an average car
+  - Or flying <Value data={environment_impact} value=flying format="number" decimals=1 /> km in an airplane
 
 {/if}
