@@ -1,5 +1,7 @@
 ---
 title: Green Algorithms Calculator
+# TODO Support links
+# http://calculator.green-algorithms.org//?runTime_hour=12&runTime_min=0&appVersion=v2.2&locationContinent=Europe&locationCountry=Austria&locationRegion=AT&coreType=CPU&numberCPUs=12&CPUmodel=Xeon%20E5-2683%20v4&memory=64&platformType=localServer
 ---
 
 ## Details about your algorithm
