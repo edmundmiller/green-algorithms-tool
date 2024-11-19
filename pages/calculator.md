@@ -5,6 +5,7 @@ title: Green Algorithms Calculator
 # Green Algorithms Calculator
 
 <script>
+// Default values
 let defaultValues = {
     runTime_hour: 12,
     runTime_min: 0,
@@ -23,6 +24,21 @@ let defaultValues = {
     PUE: 1.0,
     PSF: 1
 };
+
+// Declare reactive variables
+let coreType = defaultValues.coreType;
+let numberCPUs = defaultValues.numberCPUs;
+let CPUmodel = defaultValues.CPUmodel;
+let numberGPUs = defaultValues.numberGPUs;
+let GPUmodel = defaultValues.GPUmodel;
+let memory = defaultValues.memory;
+let runTime_hour = defaultValues.runTime_hour;
+let runTime_min = defaultValues.runTime_min;
+let PUE = defaultValues.PUE;
+let PSF = defaultValues.PSF;
+let continent;
+let country;
+let location;
 </script>
 
 ```sql
