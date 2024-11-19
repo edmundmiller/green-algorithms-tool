@@ -31,3 +31,12 @@ Selected: {inputs.hardcoded.value}
 />
 
 Selected: {inputs.text_input4}
+
+```sql current_models
+select model from v2_2.providers_hardware
+```
+
+<Dropdown name=core_model title="Model" data={current_models}     value=model
+/>
+
+---

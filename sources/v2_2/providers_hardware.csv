@@ -1,4 +1,3 @@
-index,CPU/GPU/TPU,"Must match the models in ""TDP_cpu"" or ""TDP_gpu""",
 provider,type,model,source
 gcp,CPU,,Intel Xeon Scalable Proocessor (cascade lake)
 gcp,CPU,,Intel Xeon Scalable Proocessor (skylake)
