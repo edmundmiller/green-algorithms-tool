@@ -98,3 +98,11 @@ value=countryName
 </ButtonGroup>
 
 <!-- TODO App version?-->
+
+---
+
+<!-- TODO Carbon footprint -->
+<!-- TODO Energy needed -->
+<!-- TODO Carbon sequestration -->
+<!-- TODO in a passenger car -->
+<!-- TODO on a flight Paris-Longdon -->
