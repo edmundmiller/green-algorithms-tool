@@ -4,24 +4,27 @@ title: Green Algorithms Calculator
 
 ## Details about your algorithm
 
-To understand how each parameter impacts your carbon footprint, check out the formula below and the methods article
+To understand how each parameter impacts your carbon footprint, check out the formula below and the [methods article](https://onlinelibrary.wiley.com/doi/10.1002/advs.202100707)
 
-<Dropdown name=runtime title="Runtime (HH:MM)">
-<DropdownOption valueLabel="1H" value=1 />
-<DropdownOption valueLabel="2H" value=2 />
-<DropdownOption valueLabel="3H" value=3 />
+### Runtime (HH:MM)
+<Dropdown name=runtime title="Hours">
+<DropdownOption valueLabel="1 Hours" value=1 />
+<DropdownOption valueLabel="2 Hours" value=2 />
+<DropdownOption valueLabel="3 Hours" value=3 />
 </Dropdown>
 
-Selected: {inputs.hardcoded.value}
+<Dropdown name=runtime title="Minutes">
+<DropdownOption valueLabel="1 min" value=1 />
+<DropdownOption valueLabel="2 min" value=2 />
+<DropdownOption valueLabel="3 min" value=3 />
+</Dropdown>
 
 ---
 
 <Dropdown name=core_type title="Type of cores">
-
     <DropdownOption valueLabel="CPU" value="CPU" />
     <DropdownOption valueLabel="GPU" value="GPU" />
     <DropdownOption value="Both" />
-
 </Dropdown>
 
 <TextInput
@@ -41,130 +44,57 @@ select model from v2_2.providers_hardware
 
 ---
 
-## Memory Configuration
-
 <TextInput
     name="memory"
     title="Memory (GB)"
     defaultValue="64"
 />
 
+---
+
 ## Platform Configuration
 
 <Dropdown
-    name="platform_type"
-    title="Platform Type"
-    data={[
-        {label: 'Local Server', value: 'localServer'},
-        {label: 'Cloud Provider', value: 'cloud'}
-    ]}
-/>
+name="platform_type"
+title="Platform Type"
+>
+    <DropdownOption valueLabel="Cloud Computing" value="cloud" />
+    <DropdownOption valueLabel="Personal computer" value="personal" />
+    <DropdownOption valueLabel="Local Server" value="server" />
+</Dropdown>
 
-{#if inputs.platform_type.value === 'cloud'}
-<Dropdown
-    name="cloud_provider"
-    title="Cloud Provider"
-    data={[
-        {label: 'Google Cloud Platform', value: 'gcp'},
-        {label: 'Amazon Web Services', value: 'aws'},
-        {label: 'Microsoft Azure', value: 'azure'}
-    ]}
-/>
-{/if}
+<!-- {#if inputs.platform_type.value === 'cloud'}
+TODO Cloud selection
+{/if} -->
 
-## Usage Factors
-
-<TextInput
-    name="cpu_usage"
-    title="CPU Usage Factor (0-1)"
-    defaultValue="1.0"
-/>
-
-{#if inputs.core_type.value === 'GPU' || inputs.core_type.value === 'Both'}
-<TextInput
-    name="gpu_usage"
-    title="GPU Usage Factor (0-1)"
-    defaultValue="1.0"
-/>
-{/if}
-
-## Power Usage Effectiveness (PUE)
-
-```sql pue_defaults
-select * from v2_2.defaults_PUE
+```sql location_country
+select countryName from v2_2.CI_aggregated
+-- TODO Select region and then country
 ```
 
-<TextInput
-    name="pue"
-    title="Power Usage Effectiveness"
-    defaultValue={pue_defaults[0].default_value}
-/>
-
-<small>*PUE is the ratio of total power consumption of the data center to the power consumption of the computing equipment. A typical value is {pue_defaults[0].default_value}.</small>
-
-## Location
-
 <Dropdown
-    name="continent"
-    title="Continent"
-    data={[
-        {label: 'Europe', value: 'europe'},
-        {label: 'North America', value: 'north_america'},
-        {label: 'South America', value: 'south_america'},
-        {label: 'Asia', value: 'asia'},
-        {label: 'Africa', value: 'africa'},
-        {label: 'Oceania', value: 'oceania'}
-    ]}
+name=compute_location
+title="Select location"
+data={location_country}
+value=countryName
 />
 
-{#if inputs.continent.value}
-<Dropdown
-    name="country"
-    title="Country"
-    data={carbon_intensity
-        .filter(c => c.continent === inputs.continent.value)
-        .map(c => ({
-            label: c.country,
-            value: c.country
-        }))}
-/>
-{/if}
+<br/>
 
-{#if inputs.country.value}
-<Dropdown
-    name="region"
-    title="Region"
-    data={carbon_intensity
-        .filter(c => 
-            c.continent === inputs.continent.value && 
-            c.country === inputs.country.value)
-        .map(c => ({
-            label: c.region,
-            value: c.location
-        }))}
-/>
-{/if}
+<ButtonGroup name=real_cpu_usage title="Do you know the real usage factor of your CPU?" display="tabs">
+    <ButtonGroupItem valueLabel="Yes" value=true />
+    <ButtonGroupItem valueLabel="No" value=false default />
+</ButtonGroup>
 
-## Results
+<ButtonGroup name=pue title="Do you know the Power Usage Efficiency (PUE) of your local data centre?" display="tabs">
+    <ButtonGroupItem valueLabel="Yes" value=true />
+    <ButtonGroupItem valueLabel="No" value=false default />
+</ButtonGroup>
 
-{#if calculate_emissions}
-Your computation would result in:
 
-- **Carbon Emissions**: {calculate_emissions[0].emissions.toFixed(2)} gCO2e
-- **Energy Consumption**: {calculate_emissions[0].energy_kwh.toFixed(2)} kWh
-- **Power Draw**:
-  - CPU: {calculate_emissions[0].cpu_power.toFixed(2)}W
-  - GPU: {calculate_emissions[0].gpu_power.toFixed(2)}W
-  - Memory: {calculate_emissions[0].memory_power.toFixed(2)}W
+<ButtonGroup name=pragmatic_scaling_factor title="Do you want to use a Pragmatic Scaling Factor?" display="tabs">
+    <ButtonGroupItem valueLabel="Yes" value=true />
+    <ButtonGroupItem valueLabel="No" value=false default />
+</ButtonGroup>
 
-<BarChart
-    data={[
-        {component: 'CPU', power: calculate_emissions[0].cpu_power},
-        {component: 'GPU', power: calculate_emissions[0].gpu_power},
-        {component: 'Memory', power: calculate_emissions[0].memory_power}
-    ]}
-    x="component"
-    y="power"
-    title="Power Distribution (W)"
-/>
-{/if}
+<!-- TODO App version?-->
