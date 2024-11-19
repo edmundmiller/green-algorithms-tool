@@ -167,4 +167,39 @@ from ${carbon};
   - Equivalent to driving <Value data={environment_impact} value=driving format="number" decimals=1 /> km in an average car
   - Or flying <Value data={environment_impact} value=flying format="number" decimals=1 /> km in an airplane
 
+### Computing cores VS Memory
+
+```sql donut_query
+select 'Glazed' as donut, 213 as count
+union all
+select 'Cruller' as donut, 442 as count
+union all
+select 'Jelly-filled' as donut, 321 as count
+union all
+select 'Cream-filled' as donut, 350 as count
+```
+
+```sql donut_data
+select donut as name, count as value
+from ${donut_query}
+```
+
+<ECharts config={
+    {
+        tooltip: {
+            formatter: '{b}: {c} ({d}%)'
+        },
+      series: [
+        {
+          type: 'pie',
+          radius: ['40%', '70%'],
+          data: [...donut_data],
+        }
+      ]
+      }
+    }
+/>
+
 {/if}
+
+
