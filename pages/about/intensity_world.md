@@ -3,7 +3,7 @@ title: Carbon Intensity across the world
 ---
 
 <AreaMap
-    geoJsonUrl='/world.geo.json'
+    geoJsonUrl='/sources/world.geo.json'
 />
 <!-- TODO Add graph -->
 
