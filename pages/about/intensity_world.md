@@ -2,10 +2,17 @@
 title: Carbon Intensity across the world
 ---
 
+```sql CI_aggr
+select * from v2_2.CI_aggregated
+```
 <AreaMap
-    geoJsonUrl='/sources/world.geo.json'
+    data={CI_aggr}
+    areaCol=countryName
+    geoJsonUrl='/world.geo.json'
+    geoId=ADMIN
+    value=carbonIntensity
 />
-<!-- TODO Add graph -->
+        <!-- hovertemplate="%{text} <extra> %{z:.0f} gCO2e/kWh </extra>", -->
 
 ## About CO2e
 
