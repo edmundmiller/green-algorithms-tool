@@ -14,11 +14,13 @@ And above all, only run jobs that you need!
 
 The carbon footprint is calculated by estimating the energy draw of the algorithm and the carbon intensity of producing this energy at a given location:
 
-carbon footprint = energy needed * carbon intensity
+<!-- TODO Render these nicely -->
+
+## carbon footprint = energy needed * carbon intensity
 
 Where the energy needed is:
 
-runtime * (power draw for cores * usage + power draw for memory) * PUE * PSF
+## runtime * (power draw for cores * usage + power draw for memory) * PUE * PSF
 
 The power draw for the computing cores depends on the model and number of cores, while the memory power draw only depends on the size of memory available. The usage factor corrects for the real core usage (default is 1, i.e. full usage). The PUE (Power Usage Effectiveness) measures how much extra energy is needed to operate the data centre (cooling, lighting etc.). The PSF (Pragmatic Scaling Factor) is used to take into account multiple identical runs (e.g. for testing or optimisation).
 
