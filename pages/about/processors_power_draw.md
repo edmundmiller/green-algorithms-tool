@@ -6,24 +6,26 @@ title: Power draw of different processors
 
 The following CPUs are commonly used in computing workloads, with their typical power draw per core:
 
-| Processor | Power Draw per Core (W) |
-|-----------|------------------------|
-| Ryzen 5 3500U | 15 |
-| Xeon Platinum 9282 | 14 |
-| Xeon E5-2683 v4 | 12 |
-| Core i7-10700 | 12 |
-| Xeon Gold 6142 | 11 |
-| Core i5-10600 | 10 |
-| Ryzen 5 3600 | 10 |
-| Core i9-10920XE | 9 |
-| Core i5-10600K | 9 |
-| Ryzen 5 3400G | 8 |
-| Core i3-10320 | 8 |
-| Xeon X3430 | 7 |
+
+<!-- TODO Select off a dimension grid -->
+<!-- ```sql pdc_dimensions -->
+<!-- select * from v2_2.TDP_cpu -->
+<!-- ``` -->
 
 ```sql cpu_pdc
-select model,TDP_per_core from v2_2.TDP_cpu
+select
+model,
+TDP_per_core
+from v2_2.TDP_cpu 
+
 ```
+
+<!-- <DimensionGrid  -->
+<!--     data={pdc_dimensions}  -->
+<!--     name="selected_dimensions" -->
+<!--     metric='TDP_per_core'  -->
+<!--     multiple -->
+<!-- /> -->
 
 <BarChart 
     data={cpu_pdc}
@@ -36,6 +38,21 @@ select model,TDP_per_core from v2_2.TDP_cpu
         '#fcdad9',
         ]}
 />
+
+## Example
+
+<!-- select state, category, item, channel, sales from needful_things.orders -->
+
+<!-- select  -->
+<!-- order_month,  -->
+<!-- sum(sales) as sales_usd0  -->
+<!-- from needful_things.orders  -->
+<!-- where ( true ) -->
+<!-- group by all -->
+
+<!-- <DimensionGrid data={orders} metric='sum(sales)' name=selected_dimensions />  -->
+
+<!-- <LineChart data={monthly_sales} handleMissing=zero /> -->
 
 # GPU Power Draw Comparison
 
