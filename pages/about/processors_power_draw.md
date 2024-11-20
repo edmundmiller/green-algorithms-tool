@@ -24,7 +24,7 @@ select
   TDP_per_core as power_draw,
   'GPU' as type 
 from v2_2.TDP_gpu
-order by power_draw desc
+order by power_draw asc
 ```
 
 <!-- <DimensionGrid  -->
@@ -45,20 +45,12 @@ order by power_draw desc
         ]}
 />
 
-## Example
-
-<!-- select state, category, item, channel, sales from needful_things.orders -->
-
-<!-- select  -->
-<!-- order_month,  -->
-<!-- sum(sales) as sales_usd0  -->
-<!-- from needful_things.orders  -->
-<!-- where ( true ) -->
-<!-- group by all -->
-
-<!-- <DimensionGrid data={orders} metric='sum(sales)' name=selected_dimensions />  -->
-
-<!-- <LineChart data={monthly_sales} handleMissing=zero /> -->
+<Heatmap 
+    data={processor_power} 
+    y=model 
+    x=type 
+    value=power_draw
+/>
 
 # Combined Processor Power Draw Comparison
 
