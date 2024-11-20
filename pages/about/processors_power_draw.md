@@ -29,6 +29,12 @@ select model,TDP_per_core from v2_2.TDP_cpu
     data={cpu_pdc}
     x=model
     y=TDP_per_core
+    colorPalette={[
+        '#cf0d06',
+        '#eb5752',
+        '#e88a87',
+        '#fcdad9',
+        ]}
 />
 
 # GPU Power Draw Comparison
