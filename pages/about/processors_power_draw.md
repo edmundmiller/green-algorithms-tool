@@ -12,12 +12,19 @@ The following CPUs are commonly used in computing workloads, with their typical 
 <!-- select * from v2_2.TDP_cpu -->
 <!-- ``` -->
 
-```sql cpu_pdc
+```sql processor_power
+select 
+  model,
+  TDP_per_core as power_draw,
+  'CPU' as type
+from v2_2.TDP_cpu
+union all
 select
-model,
-TDP_per_core
-from v2_2.TDP_cpu 
-
+  model,
+  TDP_per_core as power_draw,
+  'GPU' as type 
+from v2_2.TDP_gpu
+order by power_draw desc
 ```
 
 <!-- <DimensionGrid  -->
@@ -28,14 +35,13 @@ from v2_2.TDP_cpu
 <!-- /> -->
 
 <BarChart 
-    data={cpu_pdc}
+    data={processor_power}
     x=model
-    y=TDP_per_core
+    y=power_draw
+    series=type
     colorPalette={[
-        '#cf0d06',
-        '#eb5752',
-        '#e88a87',
-        '#fcdad9',
+        '#cf0d06', // CPU
+        '#0d6ecf', // GPU
         ]}
 />
 
@@ -54,20 +60,9 @@ from v2_2.TDP_cpu
 
 <!-- <LineChart data={monthly_sales} handleMissing=zero /> -->
 
-# GPU Power Draw Comparison
+# Combined Processor Power Draw Comparison
 
-Graphics Processing Units (GPUs) typically have higher power requirements:
-
-| GPU | Total Power Draw (W) |
-|-----|-------------------|
-| NVIDIA Tesla V100 | 300 |
-| NVIDIA Tesla P100 PCIe | 250 |
-| NVIDIA GTX TITAN X | 250 |
-| NVIDIA RTX 2080 Ti | 250 |
-| TPU v3 | 200 |
-| NVIDIA GTX 1080 | 180 |
-| NVIDIA Tesla T4 | 70 |
-| NVIDIA Jetson AGX Xavier | 30 |
+The chart above shows power draw for both CPUs (per core) and GPUs (total). As you can see, GPUs typically have much higher total power requirements compared to individual CPU cores.
 
 ## Notes
 
