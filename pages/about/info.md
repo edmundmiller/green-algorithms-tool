@@ -1,31 +1,29 @@
-## Data and code
+## Data and Code
 
-All the data and code used to run this calculator can be found on GitHub
+The complete source code and datasets for this calculator are available on [GitHub](https://github.com/green-algorithms/green-algorithms-tool).
 
-## Questions / Suggestions?
+## Questions & Suggestions
 
-If you have questions or suggestions about the tool, you can open an issue on the GitHub or email us
+Have feedback? Please [open an issue](https://github.com/green-algorithms/green-algorithms-tool/issues) on GitHub or [email us](mailto:contact@green-algorithms.org).
 
-## About us
+## About Us
 
-The Green Algorithms project was jointly developed by
-Loïc Lannelongue*¹, Jason Grealey*², and Michael Inouye³
-(1) University of Cambridge
-(2) Baker Heart and Diabetes Institute and La Trobe University
-(3) Baker Institute, University of Cambridge, Alan Turing Institute, Health Data Research UK
+The Green Algorithms project was developed by:
 
-- Contributed equally to this work
+* Loïc Lannelongue¹*
+* Jason Grealey²*
+* Michael Inouye³
 
-More information here
+¹ University of Cambridge  
+² Baker Heart and Diabetes Institute and La Trobe University  
+³ Baker Institute, University of Cambridge, Alan Turing Institute, Health Data Research UK
 
-## \#ShowYourStripes
+\* Equal contribution
 
-These coloured stripes in the background represent the change in world temperatures from 1850 to 2018. This striking design was made by Ed Hawkins from the University of Reading.
+## #ShowYourStripes
 
-More on ShowYourStipes.info
+The background stripes visualize global temperature changes from 1850 to 2018, designed by Ed Hawkins (University of Reading). Learn more at [ShowYourStripes.info](https://showyourstripes.info).
 
-Additional credits for the app can be found on the GitHub
+## Citation
 
-## How to cite this work
-
-Lannelongue, L., Grealey, J., Inouye, M., Green Algorithms: Quantifying the Carbon Footprint of Computation. Adv. Sci. 2021, 2100707. https://doi.org/10.1002/advs.202100707
+> Lannelongue, L., Grealey, J., Inouye, M. (2021). Green Algorithms: Quantifying the Carbon Footprint of Computation. *Advanced Science*, 2100707. [https://doi.org/10.1002/advs.202100707](https://doi.org/10.1002/advs.202100707)
