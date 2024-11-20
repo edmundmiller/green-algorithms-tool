@@ -2,6 +2,9 @@
 title: Carbon Intensity across the world
 ---
 
+<AreaMap
+    geoJsonUrl='/world.geo.json'
+/>
 <!-- TODO Add graph -->
 
 ## About CO2e
