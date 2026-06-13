@@ -2,7 +2,7 @@
   --font-color: rgb(60, 60, 60);
   --box-color: #f9f9f9;
   --bg-color: #f2f2f2;
-  --accent: #4c9f70;
+  --accent: #2b8159;
   --accent-dark: #356e4e;
   --grid: #e6e6e6;
   --pie-memory: #e8a09a;
@@ -34,7 +34,7 @@ body {
 header.container { text-align: center; padding-top: 24px; }
 header h1 { margin: 0; font-size: 2.4em; font-weight: 600; letter-spacing: 0.05em; }
 .subtitle { margin: 4px 0 0; font-size: 1.2em; font-style: italic; }
-.version { font-size: 0.85em; color: #777; }
+.version { font-size: 0.85em; color: #6b6b6b; }
 
 .columns { display: grid; grid-template-columns: minmax(320px, 5fr) 7fr; gap: 16px; align-items: start; }
 @media (max-width: 900px) { .columns { grid-template-columns: 1fr; } }
@@ -51,7 +51,7 @@ header h1 { margin: 0; font-size: 2.4em; font-weight: 600; letter-spacing: 0.05e
 h2 { font-size: 1.15em; font-weight: 600; margin: 0 0 10px; }
 h3 { font-size: 1em; font-weight: 600; margin: 12px 0 4px; }
 
-.hint { font-size: 0.85em; color: #777; margin: 4px 0 12px; }
+.hint { font-size: 0.85em; color: #6b6b6b; margin: 4px 0 12px; }
 
 .field { margin-bottom: 14px; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
@@ -94,7 +94,7 @@ button:hover { background: var(--accent-dark); }
 .headline { display: flex; gap: 24px; flex-wrap: wrap; justify-content: space-around; }
 .metric { display: flex; align-items: center; gap: 12px; }
 .metric-value { font-size: 1.5em; font-weight: 600; color: var(--accent-dark); }
-.metric-label { font-size: 0.85em; color: #777; }
+.metric-label { font-size: 0.85em; color: #6b6b6b; }
 .metric-grid { display: flex; gap: 16px; flex-wrap: wrap; justify-content: space-around; }
 
 .chart { width: 100%; overflow-x: auto; }
@@ -117,7 +117,7 @@ blockquote {
   padding: 8px;
 }
 
-footer.container { text-align: center; font-size: 0.8em; color: #777; padding: 16px; }
+footer.container { text-align: center; font-size: 0.8em; color: #6b6b6b; padding: 16px; }
 
 a { color: var(--accent-dark); }
 
