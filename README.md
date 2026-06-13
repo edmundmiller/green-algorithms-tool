@@ -10,6 +10,27 @@
 
 <img src="assets/images/screenshot_app.png" width="500">
 
+## Static site (new!)
+
+The calculator is now a **fully static site**: all calculations run in the browser,
+no server required. The site lives in [`site/`](site/) and is plain HTML/CSS/JS
+with zero runtime dependencies (~26 kB gzipped in total, vs ~2.65 MB for the
+previous server-rendered Dash app).
+
+- `site/index.html` — the calculator
+- `site/environmental-impact.html` — how much CO2 the static rewrite saves (~142 kg CO2e/year at 10k visits/month)
+- `site/data.js` — generated from the CSVs in `sources/latest/` by `scripts/build_data.py`
+
+To work on it locally:
+
+```bash
+python3 scripts/build_data.py        # regenerate site/data.js after editing the CSVs
+python3 -m http.server -d site 8000  # serve at http://localhost:8000
+```
+
+Deployment to GitHub Pages is automated by `.github/workflows/deploy-pages.yml`
+on every push to `main`. The original Dash implementation is kept in `app.py`
+/ `html_layout.py` as the reference implementation of the methodology.
 
 ## Methods and data
 

@@ -1,0 +1,129 @@
+:root {
+  --font-color: rgb(60, 60, 60);
+  --box-color: #f9f9f9;
+  --bg-color: #f2f2f2;
+  --accent: #4c9f70;
+  --accent-dark: #356e4e;
+  --grid: #e6e6e6;
+  --pie-memory: #e8a09a;
+  --pie-cpu: #9bbfe0;
+  --pie-gpu: #cfabd3;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg-color);
+  color: var(--font-color);
+  font-family: "Raleway", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Warming stripes header (1850-2022 global temperature, after Ed Hawkins) */
+.stripes {
+  height: 16px;
+  background: linear-gradient(to right,
+    #08306b 0%, #2171b5 12%, #4292c6 25%, #6baed6 37%, #9ecae1 48%,
+    #c6dbef 56%, #fee0d2 63%, #fcae91 72%, #fb6a4a 82%, #cb181d 92%, #67000d 100%);
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+header.container { text-align: center; padding-top: 24px; }
+header h1 { margin: 0; font-size: 2.4em; font-weight: 600; letter-spacing: 0.05em; }
+.subtitle { margin: 4px 0 0; font-size: 1.2em; font-style: italic; }
+.version { font-size: 0.85em; color: #777; }
+
+.columns { display: grid; grid-template-columns: minmax(320px, 5fr) 7fr; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .columns { grid-template-columns: 1fr; } }
+
+.box {
+  background: var(--box-color);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.box.wide { margin-top: 0; }
+
+h2 { font-size: 1.15em; font-weight: 600; margin: 0 0 10px; }
+h3 { font-size: 1em; font-weight: 600; margin: 12px 0 4px; }
+
+.hint { font-size: 0.85em; color: #777; margin: 4px 0 12px; }
+
+.field { margin-bottom: 14px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.grow { flex: 1 1 120px; }
+
+label, .group-label { display: block; font-weight: 600; font-size: 0.9em; margin-bottom: 4px; }
+.radios label { display: inline-flex; align-items: center; gap: 4px; font-weight: 400; margin-right: 12px; }
+
+input[type="number"], select {
+  font: inherit;
+  color: inherit;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  max-width: 100%;
+}
+input[type="number"] { width: 110px; }
+select { width: 100%; }
+.row > input[type="number"] { flex: 0 0 auto; }
+
+button {
+  font: inherit;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+button:hover { background: var(--accent-dark); }
+
+.hidden { display: none !important; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* Results */
+.headline { display: flex; gap: 24px; flex-wrap: wrap; justify-content: space-around; }
+.metric { display: flex; align-items: center; gap: 12px; }
+.metric-value { font-size: 1.5em; font-weight: 600; color: var(--accent-dark); }
+.metric-label { font-size: 0.85em; color: #777; }
+.metric-grid { display: flex; gap: 16px; flex-wrap: wrap; justify-content: space-around; }
+
+.chart { width: 100%; overflow-x: auto; }
+.chart svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+blockquote {
+  border-left: 4px solid var(--accent);
+  margin: 0;
+  padding: 8px 14px;
+  background: #fff;
+  font-style: italic;
+}
+
+.formula {
+  text-align: center;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  background: #fff;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+footer.container { text-align: center; font-size: 0.8em; color: #777; padding: 16px; }
+
+a { color: var(--accent-dark); }
+
+/* Environmental impact page */
+.impact-table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+.impact-table th, .impact-table td { border: 1px solid var(--grid); padding: 6px 10px; text-align: left; }
+.impact-table th { background: #fff; }
+.impact-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.big-saving { font-size: 1.4em; font-weight: 600; color: var(--accent-dark); }

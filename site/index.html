@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Green Algorithms — How green are your computations?</title>
+<meta name="description" content="Estimate the carbon footprint of your computations. A fully static calculator: everything runs in your browser.">
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="style.css">
+<script defer src="data.js"></script>
+<script defer src="app.js"></script>
+</head>
+<body>
+
+<div class="stripes" role="img" aria-label="Warming stripes by Ed Hawkins"></div>
+
+<header class="container">
+  <h1>Green Algorithms</h1>
+  <p class="subtitle">How green are your computations?</p>
+  <p class="version">www.green-algorithms.org &middot; <span id="appVersion"></span> &middot; static edition &middot;
+    <a href="environmental-impact.html">environmental impact of this site</a></p>
+</header>
+
+<main class="container">
+  <div class="columns">
+
+    <!-- ============ INPUT PANEL ============ -->
+    <section class="box" id="inputPanel" aria-labelledby="inputTitle">
+      <h2 id="inputTitle">Details about your algorithm</h2>
+      <p class="hint">To understand and report the impact of a particular run of your code.
+        Estimations are made in your browser &mdash; nothing is sent to a server.</p>
+
+      <div class="field">
+        <label for="runTime_hour">Runtime (HH:MM)</label>
+        <div class="row">
+          <input type="number" id="runTime_hour" min="0" step="1" value="12" aria-label="Runtime hours">
+          <input type="number" id="runTime_min" min="0" max="59" step="1" value="0" aria-label="Runtime minutes">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="coreType">Type of cores</label>
+        <select id="coreType">
+          <option value="CPU" selected>CPU</option>
+          <option value="GPU">GPU</option>
+          <option value="Both">Both</option>
+        </select>
+      </div>
+
+      <div id="CPUdiv">
+        <h3>CPUs</h3>
+        <div class="row">
+          <div class="field">
+            <label for="numberCPUs">Number of cores</label>
+            <input type="number" id="numberCPUs" min="0" step="1" value="12">
+          </div>
+          <div class="field grow">
+            <label for="CPUmodel">Model</label>
+            <select id="CPUmodel"></select>
+          </div>
+        </div>
+        <div class="field hidden" id="tdpCPUdiv">
+          <label for="tdpCPU">What is the Thermal Design Power (TDP) value per core of your CPU? (in W)</label>
+          <input type="number" id="tdpCPU" min="0" step="0.1" value="12">
+        </div>
+      </div>
+
+      <div id="GPUdiv" class="hidden">
+        <h3>GPUs</h3>
+        <div class="row">
+          <div class="field">
+            <label for="numberGPUs">Number of GPUs</label>
+            <input type="number" id="numberGPUs" min="0" step="1" value="1">
+          </div>
+          <div class="field grow">
+            <label for="GPUmodel">Model</label>
+            <select id="GPUmodel"></select>
+          </div>
+        </div>
+        <div class="field hidden" id="tdpGPUdiv">
+          <label for="tdpGPU">What is the Thermal Design Power (TDP) value of your GPU? (in W)</label>
+          <input type="number" id="tdpGPU" min="0" step="1" value="200">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="memory">Memory available (in GB)</label>
+        <input type="number" id="memory" min="0" step="1" value="64">
+      </div>
+
+      <div class="field">
+        <label for="platformType">Select the platform used for the computations</label>
+        <select id="platformType">
+          <option value="localServer" selected>Local server</option>
+          <option value="personalComputer">Personal computer</option>
+          <option value="cloudComputing">Cloud computing</option>
+        </select>
+      </div>
+
+      <div class="field hidden" id="providerDiv">
+        <label for="provider">Cloud provider</label>
+        <select id="provider"></select>
+      </div>
+
+      <div class="hidden" id="serverDiv">
+        <label class="group-label">Select server</label>
+        <div class="row">
+          <select id="serverContinent" class="grow" aria-label="Server continent"></select>
+          <select id="server" class="grow" aria-label="Data centre"></select>
+        </div>
+      </div>
+
+      <div id="locationDiv">
+        <label class="group-label">Select location</label>
+        <div class="row">
+          <select id="locationContinent" class="grow" aria-label="Continent"></select>
+          <select id="locationCountry" class="grow" aria-label="Country"></select>
+          <select id="locationRegion" class="grow" aria-label="Region"></select>
+        </div>
+      </div>
+
+      <div class="field radio-field" id="usageCPUdiv">
+        <label class="group-label">Do you know the real usage factor of your CPU?</label>
+        <div class="row">
+          <span class="radios" role="radiogroup" aria-label="CPU usage factor known">
+            <label><input type="radio" name="usageCPUradio" value="No" checked> No</label>
+            <label><input type="radio" name="usageCPUradio" value="Yes"> Yes</label>
+          </span>
+          <input type="number" id="usageCPU" min="0" max="1" step="0.1" value="1.0" class="hidden" aria-label="CPU usage factor (between 0 and 1)">
+        </div>
+      </div>
+
+      <div class="field radio-field hidden" id="usageGPUdiv">
+        <label class="group-label">Do you know the real usage factor of your GPU?</label>
+        <div class="row">
+          <span class="radios" role="radiogroup" aria-label="GPU usage factor known">
+            <label><input type="radio" name="usageGPUradio" value="No" checked> No</label>
+            <label><input type="radio" name="usageGPUradio" value="Yes"> Yes</label>
+          </span>
+          <input type="number" id="usageGPU" min="0" max="1" step="0.1" value="1.0" class="hidden" aria-label="GPU usage factor (between 0 and 1)">
+        </div>
+      </div>
+
+      <div class="field radio-field" id="PUEdiv">
+        <label class="group-label">Do you know the Power Usage Efficiency (PUE) of your local data centre?</label>
+        <div class="row">
+          <span class="radios" role="radiogroup" aria-label="PUE known">
+            <label><input type="radio" name="PUEradio" value="No" checked> No</label>
+            <label><input type="radio" name="PUEradio" value="Yes"> Yes</label>
+          </span>
+          <input type="number" id="PUE" min="1" step="0.01" value="1.67" class="hidden" aria-label="PUE value">
+        </div>
+      </div>
+
+      <div class="field radio-field">
+        <label class="group-label">Do you want to use a Pragmatic Scaling Factor?</label>
+        <div class="row">
+          <span class="radios" role="radiogroup" aria-label="Use pragmatic scaling factor">
+            <label><input type="radio" name="PSFradio" value="No" checked> No</label>
+            <label><input type="radio" name="PSFradio" value="Yes"> Yes</label>
+          </span>
+          <input type="number" id="PSF" min="1" step="1" value="1" class="hidden" aria-label="Pragmatic scaling factor">
+        </div>
+      </div>
+
+      <div class="field">
+        <button id="shareBtn" type="button">Copy a shareable link</button>
+        <span id="shareConfirm" class="hidden hint">Link copied!</span>
+      </div>
+    </section>
+
+    <!-- ============ RESULTS PANEL ============ -->
+    <section class="results" aria-labelledby="resultsTitle">
+      <h2 id="resultsTitle" class="visually-hidden">Results</h2>
+
+      <div class="box headline">
+        <div class="metric">
+          <img src="images/logo_co2.svg" alt="" width="48" height="48">
+          <div>
+            <div class="metric-value" id="carbonEmissions_text">...</div>
+            <div class="metric-label">Carbon footprint</div>
+          </div>
+        </div>
+        <div class="metric">
+          <img src="images/logo_power_1.svg" alt="" width="48" height="48">
+          <div>
+            <div class="metric-value" id="energy_text">...</div>
+            <div class="metric-label">Energy needed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="box equivalents">
+        <h2>Carbon sequestration &amp; equivalents</h2>
+        <div class="metric-grid">
+          <div class="metric">
+            <img src="images/logo_tree_1.svg" alt="" width="40" height="40">
+            <div>
+              <div class="metric-value" id="treeTime_text">...</div>
+              <div class="metric-label">Carbon sequestration</div>
+            </div>
+          </div>
+          <div class="metric">
+            <img src="images/logo_car_3.svg" alt="" width="40" height="40">
+            <div>
+              <div class="metric-value" id="driving_text">...</div>
+              <div class="metric-label">in a passenger car (EU)</div>
+            </div>
+          </div>
+          <div class="metric">
+            <img src="images/logo_plane_1.svg" alt="" width="40" height="40">
+            <div>
+              <div class="metric-value" id="flying_text">...</div>
+              <div class="metric-label" id="flying_label">flights</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="box">
+        <h2>Where do the emissions come from?</h2>
+        <div id="pieChart" class="chart"></div>
+      </div>
+
+      <div class="box">
+        <h2>How does this compare to other locations?</h2>
+        <p class="hint">Same job, same hardware &mdash; only the location (carbon intensity of electricity) changes.</p>
+        <div id="barChart" class="chart"></div>
+      </div>
+
+      <div class="box">
+        <h2>Power draw of different processors</h2>
+        <div id="coresChart" class="chart"></div>
+      </div>
+
+      <div class="box">
+        <h2>How to report it?</h2>
+        <blockquote id="report_text">Fill in the form to generate a ready-to-use sentence for your paper or report.</blockquote>
+        <p class="hint">&#91;1&#93; Lannelongue, L., Grealey, J., Inouye, M. Green Algorithms: Quantifying the Carbon Footprint of Computation.
+          <em>Adv. Sci.</em> 2021, 2100707. <a href="https://doi.org/10.1002/advs.202100707">doi:10.1002/advs.202100707</a></p>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="box wide">
+    <h2>The formula</h2>
+    <p>The carbon footprint is calculated by estimating the energy drawn by the algorithm
+      and the carbon intensity of producing this energy at a given location:</p>
+    <p class="formula">carbon footprint = energy needed &times; carbon intensity</p>
+    <p>where the energy needed is:</p>
+    <p class="formula">runtime &times; (power draw for cores &times; usage + power draw for memory) &times; PUE &times; PSF</p>
+    <p>The power draw for the computing cores depends on the model and number of cores,
+      while the memory power draw only depends on the size of memory available.
+      The usage factor corrects for the real core usage (default is 1, i.e. full usage).
+      The PUE (Power Usage Effectiveness) measures how much extra energy is needed
+      to operate the data centre (cooling, lighting etc.).
+      The PSF (Pragmatic Scaling Factor) can be used to take into account multiple identical runs
+      (e.g. for testing or optimisation).</p>
+    <p>Carbon intensity varies more than 100-fold between countries; the same job can emit
+      far less CO2e simply by running on low-carbon electricity.</p>
+  </section>
+
+  <section class="box wide">
+    <h2>About CO2e</h2>
+    <p>"Carbon dioxide equivalent" (CO2e) measures the total greenhouse gas emissions of an activity,
+      expressed as the amount of CO2 with the same global-warming potential. It accounts for other
+      gases such as methane or nitrous oxide.</p>
+    <h2>What is a tree-month?</h2>
+    <p>It's the amount of CO2 sequestered by a mature tree in a month (about 917 g CO2).
+      We use it to put carbon emissions in perspective: how long would a tree need to absorb them?</p>
+    <h2>What can you do about it?</h2>
+    <p>The main factors are the location of the computation (carbon intensity of electricity),
+      the hardware efficiency, and how often analyses are (re)run. Choosing greener data centres,
+      energy-efficient hardware, and avoiding unnecessary re-runs can cut emissions dramatically.
+      This website itself was rebuilt as a static page to reduce its own footprint &mdash;
+      see <a href="environmental-impact.html">the environmental impact of this site</a>.</p>
+  </section>
+
+  <section class="box wide">
+    <h2>Data, code and methods</h2>
+    <p>The methodology is described in the
+      <a href="https://onlinelibrary.wiley.com/doi/10.1002/advs.202100707">Green Algorithms paper</a>.
+      All data and code are on
+      <a href="https://github.com/GreenAlgorithms/green-algorithms-tool">GitHub</a>.
+      Questions or suggestions? <a href="https://github.com/GreenAlgorithms/green-algorithms-tool/issues">Open an issue</a>
+      or email <a href="mailto:green.algorithms@gmail.com">green.algorithms@gmail.com</a>.</p>
+    <h2>How to cite this work</h2>
+    <blockquote>Lannelongue, L., Grealey, J., Inouye, M.,
+      Green Algorithms: Quantifying the Carbon Footprint of Computation.
+      Adv. Sci. 2021, 2100707. https://doi.org/10.1002/advs.202100707</blockquote>
+    <h2>#ShowYourStripes</h2>
+    <p>The warming stripes at the top represent the change in global temperature from 1850 to today.
+      They were created by <a href="https://showyourstripes.info">Ed Hawkins</a> from the University of Reading.</p>
+  </section>
+</main>
+
+<footer class="container">
+  <p>Licensed under <a href="http://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+    Icons under <a href="https://creativecommons.org/licenses/by/4.0/">CC Attribution licence</a> by
+    Laura Reen, Jeremiah, Sergei Kokota, Baianat and RoundIcons.</p>
+</footer>
+
+</body>
+</html>
