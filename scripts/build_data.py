@@ -47,14 +47,18 @@ def to_float(value):
 def main():
     data = {"version": DATA_VERSION}
 
-    # CPU: per-core TDP; GPU: whole-card TDP (as in upstream v3.1)
+    # CPU: [W per core, die area (cm2) per core, cores per chip]
+    # GPU: [W per card, die area (cm2), memory (GB)] -- as in upstream v3.1
     data["cpu"] = {}
     for row in read_csv(os.path.join("chips", "manual", "CPUs-manual.csv")):
         tdp, n_cores = to_float(row["TDP"]), to_float(row["n_cores"])
+        die = to_float(row["die_area"]) or 0
         if tdp and n_cores:
-            data["cpu"][row["model"]] = round(tdp / n_cores, 2)
+            data["cpu"][row["model"]] = [round(tdp / n_cores, 2),
+                                         round(die / n_cores, 4), n_cores]
     data["gpu"] = {
-        row["model"]: to_float(row["TDP"])
+        row["model"]: [to_float(row["TDP"]), to_float(row["die_area"]) or 0,
+                       to_float(row["memory"]) or 0]
         for row in read_csv(os.path.join("chips", "manual", "GPUs-manual.csv"))
         if to_float(row["TDP"])
     }
@@ -102,11 +106,29 @@ def main():
         row["variable"]: to_float(row["value"])
         for row in read_csv("context.csv", metadata_row=False)
     }
+    # Hardware manufacturing (embodied carbon) constants, GWP only
+    HW_VARS = [
+        "cpu_die_impact_gwp", "cpu_base_impact_gwp",
+        "gpu_die_impact_gwp", "gpu_base_impact_gwp",
+        "ram_die_impact_gwp", "ram_base_impact_gwp",
+        "ram_density", "ram_default_strip_size",
+        "motherboard_impact_gwp", "assembly_impact_gwp",
+        "rack_casing_impact_gwp", "PSU_impact_gwp",
+        "laptop_base_impact_gwp", "desktop_computer_base_impact_gwp",
+        "active_lifespan_local_server", "active_lifespan_cloud_server",
+        "active_lifespan_laptop", "active_lifespan_desktop_computer",
+        "nb_CPU_per_server", "nb_GPU_local_per_server", "nb_GPU_cloud_per_server",
+    ]
+    data["hw"] = {}
     for row in read_csv("hardware-impacts.csv", metadata_row=False):
         if row["variable"] == "memoryPower":
             data["refValues"]["memoryPower"] = to_float(row["value"])
+        elif row["variable"] in HW_VARS:
+            data["hw"][row["variable"]] = to_float(row["value"])
 
     assert "memoryPower" in data["refValues"], "memoryPower missing"
+    missing_hw = [v for v in HW_VARS if v not in data["hw"]]
+    assert not missing_hw, f"hardware impact variables missing: {missing_hw}"
     assert "GLOBAL" in data["ci"], "GLOBAL (world average) row missing"
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)

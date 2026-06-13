@@ -1,30 +1,42 @@
-# Builds the static calculator (regenerates site/data.js from the CSVs in
-# sources/latest) and publishes the site/ directory to the gh-pages branch,
-# which GitHub Pages serves automatically.
+# Builds the static calculator (regenerates site/data.js from the data in
+# sources/), runs the test suite, and publishes the site/ directory to the
+# gh-pages branch, which GitHub Pages serves automatically.
 name: Deploy static site
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Regenerate data.js from CSV sources
+      - name: Regenerate data.js from data sources
         run: python3 scripts/build_data.py
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run calculator tests
+        run: |
+          cd tests
+          npm ci
+          npm test
+
       - name: Publish site/ to gh-pages
+        if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -26,7 +26,7 @@
     <p>The Green Algorithms calculator used to be a <a href="https://plotly.com/dash/">Plotly Dash</a>
       application: a Python server that rendered the page, shipped ~2.65&nbsp;MB of JavaScript,
       and recomputed the results on the server every time an input changed.
-      This version is a static site: ~31&nbsp;kB transferred in total, all calculations run
+      This version is a static site: ~32&nbsp;kB transferred in total, all calculations run
       in your browser, and no server needs to stay on 24/7. The methodology below follows the spirit of
       <a href="https://starlight.astro.build/environmental-impact/">Starlight's environmental impact page</a>.</p>
   </section>
@@ -43,13 +43,13 @@
         <tr><td>Plotly.js charting library</td><td class="num">1,305.1 kB</td><td class="num">&mdash; (hand-rolled SVG)</td></tr>
         <tr><td>Lazy-loaded widgets (dropdowns, sliders, markdown, graph)</td><td class="num">148.0 kB</td><td class="num">&mdash;</td></tr>
         <tr><td>Layout &amp; callback definitions (API calls)</td><td class="num">10.1 kB</td><td class="num">&mdash;</td></tr>
-        <tr><td>Application code + styles</td><td class="num">included above</td><td class="num">9.2 kB</td></tr>
-        <tr><td>Data (CPUs, GPUs, carbon intensities, data centres)</td><td class="num">server-side</td><td class="num">8.4 kB</td></tr>
+        <tr><td>Application code + styles</td><td class="num">included above</td><td class="num">9.9 kB</td></tr>
+        <tr><td>Data (CPUs, GPUs, carbon intensities, data centres)</td><td class="num">server-side</td><td class="num">9.2 kB</td></tr>
         <tr><td>Icons + favicon</td><td class="num">~9 kB</td><td class="num">9.1 kB</td></tr>
-        <tr><th>Total first visit</th><th class="num">&asymp; 2,653 kB</th><th class="num">&asymp; 31 kB</th></tr>
+        <tr><th>Total first visit</th><th class="num">&asymp; 2,653 kB</th><th class="num">&asymp; 32 kB</th></tr>
       </tbody>
     </table>
-    <p>That is a <strong>~86&times; reduction (&minus;99%)</strong> in data transferred for a first visit.
+    <p>That is a <strong>~83&times; reduction (&minus;99%)</strong> in data transferred for a first visit.
       On top of that, every input change in the Dash app triggered a round trip to the server
       (a <code>POST /_dash-update-component</code> per callback); here the same calculation is a few
       microseconds of arithmetic in your browser, with zero network traffic.</p>
@@ -64,7 +64,7 @@
     <table class="impact-table">
       <thead><tr><th>Per uncached visit</th><th>Dash app</th><th>Static site</th></tr></thead>
       <tbody>
-        <tr><td>Data transferred</td><td class="num">2,653 kB</td><td class="num">31 kB</td></tr>
+        <tr><td>Data transferred</td><td class="num">2,653 kB</td><td class="num">32 kB</td></tr>
         <tr><td>Emissions</td><td class="num">&asymp; 0.91 g CO2e</td><td class="num">&asymp; 0.011 g CO2e</td></tr>
       </tbody>
     </table>
@@ -129,7 +129,7 @@
       <li>The server estimate assumes a single small always-on instance. Real deployments
         (redundancy, monitoring, CI) usually add to this, so the saving is likely understated.</li>
       <li>Static hosting isn't free of impact: CDN nodes also use energy. But the marginal share
-        attributable to one ~31 kB site is negligible compared to a dedicated dyno.</li>
+        attributable to one ~32 kB site is negligible compared to a dedicated dyno.</li>
       <li>Inspired by <a href="https://starlight.astro.build/environmental-impact/">Starlight's
         environmental impact page</a>. See also <a href="https://www.thegreenwebfoundation.org/co2-js/">CO2.js</a>
         by the Green Web Foundation.</li>
@@ -143,7 +143,7 @@
 
 <script>
 (function () {
-  var DASH_KB = 2653, STATIC_KB = 31;
+  var DASH_KB = 2653, STATIC_KB = 32;
   var G_PER_GB = 0.81 * 442; // Sustainable Web Design model
   var SERVER_KG_PER_YEAR = 32.2;
   var input = document.getElementById("visits");

@@ -14,7 +14,7 @@
 
 The calculator is now a **fully static site**: all calculations run in the browser,
 no server required. The site lives in [`site/`](site/) and is plain HTML/CSS/JS
-with zero runtime dependencies (~31 kB gzipped in total, vs ~2.65 MB for the
+with zero runtime dependencies (~32 kB gzipped in total, vs ~2.65 MB for the
 previous server-rendered Dash app).
 
 - `site/index.html` — the calculator
@@ -26,7 +26,13 @@ To work on it locally:
 ```bash
 python3 scripts/build_data.py        # regenerate site/data.js after updating sources/v3.1/
 python3 -m http.server -d site 8000  # serve at http://localhost:8000
+cd tests && npm install && npm test  # run the calculator test suite (jsdom)
+python3 scripts/refresh_data.py      # pull the latest data from the upstream data repo
 ```
+
+The data-refresh procedure is also captured as a Claude Code skill
+(`.claude/skills/refresh-data/`), so an agent can run the whole update
+(fetch, rebuild, test, re-measure) on request.
 
 Deployment to GitHub Pages is automated by `.github/workflows/deploy-pages.yml`
 on every push to `main`. The original Dash implementation is kept in `app.py`
