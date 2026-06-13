@@ -257,7 +257,7 @@
     var pueUsed;
     if (pueShown() && radioValue("PUEradio") === "Yes") {
       pueUsed = num("PUE");
-    } else if (platform === "personalComputer") {
+    } else if (platform === "personal_laptop" || platform === "desktop_computer") {
       pueUsed = 1;
     } else if (platform === "localServer") {
       pueUsed = D.pueDefaults.Unknown;
@@ -277,7 +277,7 @@
     var nCPU = num("numberCPUs"), nGPU = num("numberGPUs");
     if (coreType === "CPU" || coreType === "Both") {
       var cpuModel = $("CPUmodel").value;
-      cpuPower = cpuModel === "other" ? num("tdpCPU") : D.cpu[cpuModel];
+      cpuPower = cpuModel === "other" ? num("tdpCPU") : D.cpu[cpuModel][0];
       if (nCPU == null || cpuPower == null) return null;
       var usageCPU = radioValue("usageCPUradio") === "Yes" ? num("usageCPU") : 1;
       if (usageCPU == null) return null;
@@ -285,7 +285,7 @@
     }
     if (coreType === "GPU" || coreType === "Both") {
       var gpuModel = $("GPUmodel").value;
-      gpuPower = gpuModel === "other" ? num("tdpGPU") : D.gpu[gpuModel];
+      gpuPower = gpuModel === "other" ? num("tdpGPU") : D.gpu[gpuModel][0];
       if (nGPU == null || gpuPower == null) return null;
       var usageGPU = radioValue("usageGPUradio") === "Yes" ? num("usageGPU") : 1;
       if (usageGPU == null) return null;
@@ -293,6 +293,43 @@
     }
 
     var psf = radioValue("PSFradio") === "Yes" ? (num("PSF") || 1) : 1;
+
+    // Embodied (manufacturing) carbon, amortised over the hardware's active
+    // lifetime, as in upstream v3.1. "Other" chip models fall back to the
+    // Average chip's die area and core count.
+    var H = D.hw;
+    var lifespan =
+      platform === "personal_laptop" ? H.active_lifespan_laptop :
+      platform === "desktop_computer" ? H.active_lifespan_desktop_computer :
+      platform === "cloudComputing" ? H.active_lifespan_cloud_server :
+      H.active_lifespan_local_server; // hours
+    var mfgPerHour = 0;
+    var cpuSpec = null, gpuSpec = null;
+    if (coreType !== "GPU") {
+      cpuSpec = $("CPUmodel").value === "other" ? D.cpu.Average : D.cpu[$("CPUmodel").value];
+      mfgPerHour += nCPU * (cpuSpec[1] * H.cpu_die_impact_gwp +
+        H.cpu_base_impact_gwp / cpuSpec[2]) / lifespan;
+    }
+    if (coreType !== "CPU") {
+      gpuSpec = $("GPUmodel").value === "other" ? D.gpu.Average : D.gpu[$("GPUmodel").value];
+      mfgPerHour += nGPU * (gpuSpec[1] * H.gpu_die_impact_gwp + H.gpu_base_impact_gwp +
+        H.ram_die_impact_gwp * gpuSpec[2] / H.ram_density) / lifespan;
+    }
+    var stripArea = H.ram_default_strip_size / H.ram_density;
+    mfgPerHour += (stripArea * H.ram_die_impact_gwp + H.ram_base_impact_gwp) *
+      memory / H.ram_default_strip_size / lifespan;
+    if (platform === "personal_laptop") {
+      mfgPerHour += H.laptop_base_impact_gwp / lifespan;
+    } else if (platform === "desktop_computer") {
+      mfgPerHour += H.desktop_computer_base_impact_gwp / lifespan;
+    } else {
+      var nServers = coreType === "GPU"
+        ? nGPU / (platform === "cloudComputing" ? H.nb_GPU_cloud_per_server : H.nb_GPU_local_per_server)
+        : nCPU / (cpuSpec[2] * H.nb_CPU_per_server);
+      mfgPerHour += (H.motherboard_impact_gwp + H.assembly_impact_gwp +
+        H.rack_casing_impact_gwp + H.PSU_impact_gwp) * nServers / lifespan;
+    }
+    var embodied = runTime * mfgPerHour * psf; // gCO2e
 
     var powerMemory = pueUsed * memory * D.refValues.memoryPower;
     var powerTotal = powerCPU + powerGPU + powerMemory;
@@ -312,6 +349,7 @@
       CE_CPU: toEnergy(powerCPU) * carbonIntensity,
       CE_GPU: toEnergy(powerGPU) * carbonIntensity,
       CE_memory: toEnergy(powerMemory) * carbonIntensity,
+      embodied: embodied,
       treeMonths: CE / D.refValues.treeYear * 12,
       kmCarEU: CE / D.refValues.passengerCar_EU_perkm
     };
@@ -440,6 +478,7 @@
       $("treeTime_text").textContent = "...";
       $("driving_text").textContent = "...";
       $("flying_text").textContent = "-";
+      $("manufacturing_text").textContent = "...";
       $("report_text").textContent =
         "Fill in the form to generate a ready-to-use sentence for your paper or report.";
       renderDonut($("pieChart"), []);
@@ -450,6 +489,7 @@
 
     $("carbonEmissions_text").textContent = formatCE(r.CE);
     $("energy_text").textContent = formatEnergy(r.energy);
+    $("manufacturing_text").textContent = formatCE(r.embodied);
     $("treeTime_text").textContent = formatTrees(r.treeMonths);
     $("driving_text").textContent = smartFmt(r.kmCarEU, 2, 1e3, 0.1) + " km";
 
@@ -484,12 +524,12 @@
     // core power comparison
     var isGPU = r.coreType !== "CPU";
     var refList = (isGPU ? REF_GPUS : REF_CPUS).filter(function (m) {
-      return (isGPU ? D.gpu : D.cpu)[m] != null;
+      return (isGPU ? D.gpu : D.cpu)[m] !== undefined;
     });
     var model = isGPU ? r.gpuModel : r.cpuModel;
     if (refList.indexOf(model) < 0) refList.push(model);
     var coreItems = refList.map(function (m) {
-      var p = m === "other" ? (isGPU ? r.gpuPower : r.cpuPower) : (isGPU ? D.gpu : D.cpu)[m];
+      var p = m === "other" ? (isGPU ? r.gpuPower : r.cpuPower) : (isGPU ? D.gpu : D.cpu)[m][0];
       return { label: m === "other" ? "Yours (other)" : m, value: p, highlight: m === model };
     });
     coreItems.sort(function (a, b) { return a.value - b.value; });
@@ -522,7 +562,10 @@
       ", and draws " + formatEnergy(r.energy) + ". " + basedTxt +
       psfTxt + " this has a carbon footprint of " + formatCE(r.CE) +
       ", which is equivalent to " + formatTrees(r.treeMonths) +
-      " (calculated using green-algorithms.org, " + D.version + " data [1]).";
+      ". Manufacturing the share of hardware used adds an estimated " +
+      formatCE(r.embodied) +
+      " of embodied emissions (calculated using green-algorithms.org, " +
+      D.version + " data [1]).";
   }
 
   // ---------- permalink (same parameter names as the Dash app) ----------
@@ -584,7 +627,11 @@
     ["runTime_hour", "runTime_min", "memory", "numberCPUs", "numberGPUs",
       "tdpCPU", "tdpGPU", "usageCPU", "usageGPU", "PUE", "PSF"].forEach(setVal);
     if (q.has("coreType")) $("coreType").value = get("coreType");
-    if (q.has("platformType")) $("platformType").value = get("platformType");
+    if (q.has("platformType")) {
+      var pf = get("platformType");
+      if (pf === "personalComputer") pf = "personal_laptop"; // pre-split permalinks
+      $("platformType").value = pf;
+    }
 
     // Old permalinks use pre-v3.1 continent names
     var continentAlias = { "North America": "Americas", "South America": "Americas" };

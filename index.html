@@ -92,7 +92,8 @@
         <label for="platformType">Select the platform used for the computations</label>
         <select id="platformType">
           <option value="localServer" selected>Local server</option>
-          <option value="personalComputer">Personal computer</option>
+          <option value="personal_laptop">Laptop</option>
+          <option value="desktop_computer">Desktop computer</option>
           <option value="cloudComputing">Cloud computing</option>
         </select>
       </div>
@@ -188,6 +189,12 @@
             <div class="metric-label">Energy needed</div>
           </div>
         </div>
+        <div class="metric">
+          <div>
+            <div class="metric-value" id="manufacturing_text">...</div>
+            <div class="metric-label">+ embodied (hardware manufacturing)</div>
+          </div>
+        </div>
       </div>
 
       <div class="box equivalents">
@@ -257,6 +264,13 @@
       to operate the data centre (cooling, lighting etc.).
       The PSF (Pragmatic Scaling Factor) can be used to take into account multiple identical runs
       (e.g. for testing or optimisation).</p>
+    <p>On top of these <em>usage</em> emissions, the calculator reports an <em>embodied</em>
+      (hardware manufacturing) estimate, following the Green Algorithms v3.1 methodology:
+      the manufacturing impacts of the chips, memory and supporting hardware
+      (motherboard, casing, power supply &mdash; or the laptop/desktop itself) are amortised
+      over the hardware's active lifetime, and your run is charged for the share of that
+      lifetime it uses. For "Other" chip models, the average chip's die area and core count
+      are assumed.</p>
     <p>Carbon intensity varies more than 100-fold between countries; the same job can emit
       far less CO2e simply by running on low-carbon electricity.</p>
   </section>
