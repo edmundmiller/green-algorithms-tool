@@ -8,9 +8,10 @@
   var D; // GA_DATA
   var SVG_NS = "http://www.w3.org/2000/svg";
 
-  var PIE_COLORS = { Memory: "#E8A09A", CPU: "#9BBFE0", GPU: "#cfabd3" };
-  var MAP_COLORS = ["#78E7A2", "#86D987", "#93CB70", "#9EBC5C", "#A6AD4D",
-    "#AB9E43", "#AF8F3E", "#AF803C", "#AC713D", "#A76440", "#9E5943"];
+  var PIE_COLORS = { Memory: "#e0a13c", CPU: "#2f9e73", GPU: "#7b73d4" };
+  // low-carbon emerald -> high-carbon ember ramp (matches the warming-stripes motif)
+  var MAP_COLORS = ["#25a06a", "#4aa85f", "#6fae51", "#94b144", "#b8ae3a",
+    "#cf9d39", "#d98a3c", "#dc7440", "#d75f3e", "#cc4d3a", "#b83b32"];
 
   var REF_LOCATIONS = ["CH", "SE", "FR", "CA", "GB", "US", "CN", "IN", "AU"];
 
@@ -358,7 +359,7 @@
   // ---------- SVG helpers ----------
   function svgEl(tag, attrs, text) {
     var el = document.createElementNS(SVG_NS, tag);
-    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    for (var k in attrs) if (attrs[k] != null) el.setAttribute(k, attrs[k]);
     if (text != null) el.textContent = text;
     return el;
   }
@@ -400,23 +401,24 @@
       var d = "M " + p(r1, a0) + " A " + r1 + " " + r1 + " 0 " + large + " 1 " + p(r1, a1) +
         " L " + p(r0, a1) + " A " + r0 + " " + r0 + " 0 " + large + " 0 " + p(r0, a0) + " Z";
       svg.appendChild(withTitle(
-        svgEl("path", { d: d, fill: PIE_COLORS[s.label], stroke: "#f9f9f9", "stroke-width": 2 }),
+        svgEl("path", { "class": "slice", d: d, fill: PIE_COLORS[s.label] }),
         s.label + ": " + Math.round(s.value) + " gCO2e (" + fmtFixed(frac * 100, 1) + "%)"));
       if (frac >= 0.04) {
         var mid = (a0 + a1) / 2, rl = (r0 + r1) / 2;
         svg.appendChild(svgEl("text", {
+          "class": "slice-pct",
           x: cx + rl * Math.cos(mid), y: cy + rl * Math.sin(mid),
           "text-anchor": "middle", "dominant-baseline": "middle",
-          "font-size": 11, fill: "#3c3c3c"
+          "font-size": 11, "font-weight": 600, fill: "#15241c"
         }, fmtFixed(frac * 100, 0) + "%"));
       }
     });
     // legend
     slices.forEach(function (s, i) {
       var y = 70 + i * 24;
-      svg.appendChild(svgEl("rect", { x: 200, y: y - 10, width: 12, height: 12,
+      svg.appendChild(svgEl("rect", { x: 200, y: y - 10, width: 12, height: 12, rx: 3,
         fill: PIE_COLORS[s.label] }));
-      svg.appendChild(svgEl("text", { x: 218, y: y, "font-size": 12, fill: "#3c3c3c" },
+      svg.appendChild(svgEl("text", { x: 218, y: y, "font-size": 12 },
         s.label + " (" + fmtFixed(s.value / total * 100, 1) + "%)"));
     });
     container.appendChild(svg);
@@ -436,34 +438,41 @@
     for (var g = 0; g <= 4; g++) {
       var val = maxV * g / 4;
       var y = mT + plotH - plotH * g / 4;
-      svg.appendChild(svgEl("line", { x1: mL, x2: W - mR, y1: y, y2: y,
-        stroke: "#e6e6e6", "stroke-width": 1 }));
-      svg.appendChild(svgEl("text", { x: mL - 6, y: y + 4, "text-anchor": "end",
-        "font-size": 10, fill: "#3c3c3c" },
+      svg.appendChild(svgEl("line", { "class": "gridline", x1: mL, x2: W - mR, y1: y, y2: y,
+        "stroke-width": 1 }));
+      svg.appendChild(svgEl("text", { x: mL - 8, y: y + 4, "text-anchor": "end",
+        "font-size": 10 },
         val >= 1000 ? val.toExponential(1) : fmtFixed(val, val < 10 ? 1 : 0)));
     }
     svg.appendChild(svgEl("text", {
-      x: 14, y: mT + plotH / 2, "font-size": 11, fill: "#3c3c3c",
+      "class": "axis-label",
+      x: 14, y: mT + plotH / 2, "font-size": 11,
       transform: "rotate(-90 14 " + (mT + plotH / 2) + ")", "text-anchor": "middle"
     }, opts.yLabel));
 
     var bw = plotW / items.length;
     items.forEach(function (it, i) {
       var h = maxV ? it.value / maxV * plotH : 0;
-      var x = mL + i * bw + bw * 0.12, y = mT + plotH - h;
+      var x = mL + i * bw + bw * 0.12, y = mT + plotH - h, w = bw * 0.76;
       var fill = opts.colorByValue ? colorRamp(maxV ? it.value / maxV : 0) : opts.color;
-      var bar = svgEl("rect", { x: x, y: y, width: bw * 0.76, height: Math.max(h, 0.5),
-        fill: fill });
+      var bar = svgEl("rect", { "class": "bar", x: x, y: y, width: w,
+        height: Math.max(h, 0.5), rx: Math.min(4, w / 3), fill: fill });
       if (it.highlight) {
-        bar.setAttribute("stroke", "#3c3c3c");
-        bar.setAttribute("stroke-width", 2.5);
+        bar.setAttribute("stroke", "var(--ink)");
+        bar.setAttribute("stroke-width", 2);
+        // value callout above the highlighted bar
+        svg.appendChild(svgEl("text", {
+          x: x + w / 2, y: y - 6, "text-anchor": "middle",
+          "font-size": 11, "font-weight": 700, fill: "var(--ink)"
+        }, fmtFixed(it.value, 1)));
       }
       svg.appendChild(withTitle(bar,
         it.label + ": " + fmtFixed(it.value, 1) + " " + opts.unit));
-      var tx = mL + i * bw + bw / 2, ty = mT + plotH + 10;
+      var tx = mL + i * bw + bw / 2, ty = mT + plotH + 12;
       svg.appendChild(svgEl("text", {
-        x: tx, y: ty, "font-size": 10, fill: "#3c3c3c", "text-anchor": "end",
+        x: tx, y: ty, "font-size": 10, "text-anchor": "end",
         "font-weight": it.highlight ? "700" : "400",
+        fill: it.highlight ? "var(--ink)" : null,
         transform: "rotate(-40 " + tx + " " + ty + ")"
       }, it.label));
     });
@@ -485,6 +494,11 @@
       $("barChart").innerHTML = "";
       $("coresChart").innerHTML = "";
       return;
+    }
+
+    var resultsEl = $("results");
+    if (resultsEl && !resultsEl.classList.contains("updated")) {
+      resultsEl.classList.add("updated"); // gentle one-time reveal
     }
 
     $("carbonEmissions_text").textContent = formatCE(r.CE);
