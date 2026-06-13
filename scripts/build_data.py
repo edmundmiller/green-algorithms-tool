@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
-"""Convert the Green Algorithms CSV data into a single JS file for the static site.
+"""Convert the Green Algorithms v3.1 data into a single JS file for the static site.
 
-Reads sources/latest/*.csv (first row is metadata, second row is the header)
-and writes site/data.js, which defines window.GA_DATA. No dependencies
-beyond the Python standard library.
+Reads the data vendored in sources/v3.1/ (from the upstream
+Cambridge-Sustainable-Computing-Lab/Green-Algorithms-data repository) and
+writes site/data.js, which defines window.GA_DATA. No dependencies beyond
+the Python standard library.
+
+Mirrors the upstream v3.1 loading logic (utils/handle_inputs.py +
+utils/CI_data_config.yml):
+- carbon intensity: Electricity Maps 2024 yearly, life-cycle column;
+  zone name == country name is normalised to region "Any"
+- CPU power per core = TDP / n_cores; GPU power = whole-card TDP
+- memoryPower comes from hardware-impacts.csv
 
 Usage: python3 scripts/build_data.py
 """
@@ -13,16 +21,21 @@ import json
 import os
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.join(REPO_ROOT, "sources", "latest")
+DATA_DIR = os.path.join(REPO_ROOT, "sources", "v3.1")
 OUT_PATH = os.path.join(REPO_ROOT, "site", "data.js")
 
-APP_VERSION = "v2.2"
+DATA_VERSION = "v3.1"
+
+CI_FILE = os.path.join("carbon-intensity", "electricitymap",
+                       "CI-electricitymap-yearly_2024-with-continents.csv")
+CI_COLUMN = "Carbon intensity gCO₂eq/kWh (Life cycle)"
 
 
-def read_csv(name):
-    """Read a CSV, skipping the first (metadata) row, returning list of dicts."""
+def read_csv(name, metadata_row=True):
+    """Read a CSV, optionally skipping a first metadata row, as list of dicts."""
     with open(os.path.join(DATA_DIR, name), newline="", encoding="utf-8") as f:
-        next(f)  # metadata row
+        if metadata_row:
+            next(f)
         return list(csv.DictReader(f))
 
 
@@ -32,28 +45,34 @@ def to_float(value):
 
 
 def main():
-    data = {"version": APP_VERSION}
+    data = {"version": DATA_VERSION}
 
-    # TDP per core, by model
-    data["cpu"] = {
-        row["model"]: to_float(row["TDP_per_core"]) for row in read_csv("TDP_cpu.csv")
-    }
+    # CPU: per-core TDP; GPU: whole-card TDP (as in upstream v3.1)
+    data["cpu"] = {}
+    for row in read_csv(os.path.join("chips", "manual", "CPUs-manual.csv")):
+        tdp, n_cores = to_float(row["TDP"]), to_float(row["n_cores"])
+        if tdp and n_cores:
+            data["cpu"][row["model"]] = round(tdp / n_cores, 2)
     data["gpu"] = {
-        row["model"]: to_float(row["TDP_per_core"]) for row in read_csv("TDP_gpu.csv")
+        row["model"]: to_float(row["TDP"])
+        for row in read_csv(os.path.join("chips", "manual", "GPUs-manual.csv"))
+        if to_float(row["TDP"])
     }
 
-    # Carbon intensity by location code
-    data["ci"] = {
-        row["location"]: {
-            "continent": row["continentName"],
-            "country": row["countryName"],
-            "region": row["regionName"],
-            "ci": to_float(row["carbonIntensity"]),
+    # Carbon intensity by Electricity Maps zone id
+    data["ci"] = {}
+    for row in read_csv(CI_FILE, metadata_row=False):
+        region = row["Zone name"]
+        if region == row["Country"]:
+            region = "Any"
+        data["ci"][row["Zone id"]] = {
+            "continent": row["Continent"],
+            "country": row["Country"],
+            "region": region,
+            "ci": round(to_float(row[CI_COLUMN]), 2),
         }
-        for row in read_csv("CI_aggregated.csv")
-    }
 
-    # Cloud data centres (skip those with unknown carbon intensity location)
+    # Cloud data centres; keep only those whose location has a known CI
     data["datacenters"] = [
         {
             "provider": row["provider"],
@@ -61,27 +80,34 @@ def main():
             "location": row["location"],
             "pue": to_float(row["PUE"]),
         }
-        for row in read_csv("cloudProviders_datacenters.csv")
-        if row["location"].strip()
+        for row in read_csv(os.path.join("data-centres", "DC-cloud_2023.csv"))
+        if row["location"].strip() in data["ci"]
     ]
 
     # Default PUE per provider (incl. "Unknown")
     data["pueDefaults"] = {
-        row["provider"]: to_float(row["PUE"]) for row in read_csv("defaults_PUE.csv")
+        row["provider"]: to_float(row["PUE"])
+        for row in read_csv(os.path.join("data-centres", "default-PUE_2024.csv"))
     }
 
     # Cloud provider display names
     data["providers"] = {
         row["provider"]: row["providerName"]
-        for row in read_csv("providersNamesCodes.csv")
+        for row in read_csv("cloud-providers.csv")
         if row["platformType"] == "cloudComputing"
     }
 
-    # Reference values (memory power, car/flight/tree equivalents...)
+    # Reference values: context.csv plus memoryPower from hardware-impacts.csv
     data["refValues"] = {
         row["variable"]: to_float(row["value"])
-        for row in read_csv("referenceValues.csv")
+        for row in read_csv("context.csv", metadata_row=False)
     }
+    for row in read_csv("hardware-impacts.csv", metadata_row=False):
+        if row["variable"] == "memoryPower":
+            data["refValues"]["memoryPower"] = to_float(row["value"])
+
+    assert "memoryPower" in data["refValues"], "memoryPower missing"
+    assert "GLOBAL" in data["ci"], "GLOBAL (world average) row missing"
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w", encoding="utf-8") as f:
@@ -91,7 +117,9 @@ def main():
         f.write(";\n")
 
     size_kb = os.path.getsize(OUT_PATH) / 1024
-    print(f"Wrote {OUT_PATH} ({size_kb:.1f} kB)")
+    print(f"Wrote {OUT_PATH} ({size_kb:.1f} kB): "
+          f"{len(data['cpu'])} CPUs, {len(data['gpu'])} GPUs, "
+          f"{len(data['ci'])} locations, {len(data['datacenters'])} datacenters")
 
 
 if __name__ == "__main__":

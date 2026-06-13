@@ -12,17 +12,14 @@
   var MAP_COLORS = ["#78E7A2", "#86D987", "#93CB70", "#9EBC5C", "#A6AD4D",
     "#AB9E43", "#AF8F3E", "#AF803C", "#AC713D", "#A76440", "#9E5943"];
 
-  var REF_LOCATIONS = { CH: "Switzerland", SE: "Sweden", FR: "France",
-    CA: "Canada", GB: "United Kingdom", US: "USA", CN: "China",
-    IN: "India", AU: "Australia" };
+  var REF_LOCATIONS = ["CH", "SE", "FR", "CA", "GB", "US", "CN", "IN", "AU"];
 
-  var REF_CPUS = ["Ryzen 5 3500U", "Xeon Platinum 9282", "Xeon E5-2683 v4",
-    "Core i7-10700", "Xeon Gold 6142", "Core i5-10600", "Ryzen 5 3600",
-    "Core i9-10920XE", "Core i5-10600K", "Ryzen 5 3400G", "Core i3-10320",
-    "Xeon X3430"];
-  var REF_GPUS = ["NVIDIA Jetson AGX Xavier", "NVIDIA Tesla T4",
-    "NVIDIA GTX 1080", "TPU v3", "NVIDIA RTX 2080 Ti", "NVIDIA GTX TITAN X",
-    "NVIDIA Tesla P100 PCIe", "NVIDIA Tesla V100"];
+  var REF_CPUS = ["Core i9-13900TE", "Core i7-13700F", "AMD EPYC 7513",
+    "Average", "Xeon Silver 4416+", "Ryzen 9 7900", "AMD EPYC 75F3",
+    "Xeon w7-2475X", "Xeon Silver 4410T", "Xeon w3-2435", "Xeon Gold 6434H"];
+  var REF_GPUS = ["NVIDIA Jetson AGX Xavier 16 GB", "NVIDIA Tesla T4",
+    "NVIDIA GeForce GTX 1080", "Average", "NVIDIA Tesla V100 SXM2 16 GB",
+    "NVIDIA A100 PCIe 80 GB", "NVIDIA H100 PCIe", "NVIDIA A100 SXM4 80 GB"];
 
   function $(id) { return document.getElementById(id); }
   function radioValue(name) {
@@ -475,9 +472,10 @@
     renderDonut($("pieChart"), slices);
 
     // location comparison
-    var locItems = Object.keys(REF_LOCATIONS).map(function (code) {
-      return { label: REF_LOCATIONS[code], value: r.energy * D.ci[code].ci };
-    });
+    var locItems = REF_LOCATIONS.filter(function (code) { return D.ci[code]; })
+      .map(function (code) {
+        return { label: D.ci[code].country, value: r.energy * D.ci[code].ci };
+      });
     locItems.push({ label: "Your algorithm", value: r.CE, highlight: true });
     locItems.sort(function (a, b) { return a.value - b.value; });
     renderBars($("barChart"), locItems,
@@ -514,7 +512,7 @@
     var ci = D.ci[r.location];
     var regionTxt = ci.region === "Any" ? "" : " (" + ci.region + ")";
     var prefix = (ci.country === "United States of America" || ci.country === "United Kingdom") ? "the " : "";
-    var basedTxt = ci.country === "Any"
+    var basedTxt = (ci.country === "Any" || ci.country === "Global")
       ? "Based on the world average carbon intensity,"
       : "Based in " + prefix + ci.country + regionTxt + ",";
     var psfTxt = r.psf > 1 ? " and ran " + r.psf + " times in total," : "";
@@ -524,7 +522,7 @@
       ", and draws " + formatEnergy(r.energy) + ". " + basedTxt +
       psfTxt + " this has a carbon footprint of " + formatCE(r.CE) +
       ", which is equivalent to " + formatTrees(r.treeMonths) +
-      " (calculated using green-algorithms.org " + D.version + " [1]).";
+      " (calculated using green-algorithms.org, " + D.version + " data [1]).";
   }
 
   // ---------- permalink (same parameter names as the Dash app) ----------
@@ -588,9 +586,15 @@
     if (q.has("coreType")) $("coreType").value = get("coreType");
     if (q.has("platformType")) $("platformType").value = get("platformType");
 
+    // Old permalinks use pre-v3.1 continent names
+    var continentAlias = { "North America": "Americas", "South America": "Americas" };
+    var getContinent = function (k) {
+      var v = get(k);
+      return continentAlias[v] || v;
+    };
     refreshProviderOptions(get("provider"));
-    refreshServerOptions(get("serverContinent"), get("server"));
-    refreshLocationOptions(get("locationContinent"), get("locationCountry"),
+    refreshServerOptions(getContinent("serverContinent"), get("server"));
+    refreshLocationOptions(getContinent("locationContinent"), get("locationCountry"),
       get("locationRegion"));
 
     if (q.has("CPUmodel")) $("CPUmodel").value = get("CPUmodel");
@@ -608,14 +612,14 @@
 
   function init() {
     D = window.GA_DATA;
-    $("appVersion").textContent = D.version;
+    $("appVersion").textContent = D.version + " data";
 
     var modelOpts = function (dict) {
       return Object.keys(dict).map(function (m) { return { value: m, label: m }; })
         .concat([{ value: "other", label: "Other" }]);
     };
-    setOptions($("CPUmodel"), modelOpts(D.cpu), "Xeon E5-2683 v4");
-    setOptions($("GPUmodel"), modelOpts(D.gpu), "NVIDIA Tesla V100");
+    setOptions($("CPUmodel"), modelOpts(D.cpu), "Average");
+    setOptions($("GPUmodel"), modelOpts(D.gpu), "Average");
 
     applyURLParams();
 
