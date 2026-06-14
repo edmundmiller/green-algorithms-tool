@@ -15,6 +15,7 @@
 <div class="stripes" role="img" aria-label="Warming stripes by Ed Hawkins"></div>
 
 <header class="container">
+  <p class="eyebrow">Carbon footprint of computation</p>
   <h1>Green Algorithms</h1>
   <p class="subtitle">How green are your computations?</p>
   <p class="version">www.green-algorithms.org &middot; <span id="appVersion"></span> &middot; static edition &middot;
@@ -26,6 +27,7 @@
 
     <!-- ============ INPUT PANEL ============ -->
     <section class="box" id="inputPanel" aria-labelledby="inputTitle">
+      <p class="eyebrow">Your run</p>
       <h2 id="inputTitle">Details about your algorithm</h2>
       <p class="hint">To understand and report the impact of a particular run of your code.
         Estimations are made in your browser &mdash; nothing is sent to a server.</p>
@@ -164,32 +166,46 @@
         </div>
       </div>
 
-      <div class="field">
-        <button id="shareBtn" type="button">Copy a shareable link</button>
+      <div class="field share-row">
+        <button id="shareBtn" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <path d="M8.6 13.5 15.4 17.5M15.4 6.5 8.6 10.5"/>
+          </svg>
+          Copy a shareable link
+        </button>
         <span id="shareConfirm" class="hidden hint" role="status">Link copied!</span>
       </div>
     </section>
 
     <!-- ============ RESULTS PANEL ============ -->
-    <section class="results" aria-labelledby="resultsTitle">
+    <section class="results" id="results" aria-labelledby="resultsTitle">
       <h2 id="resultsTitle" class="visually-hidden">Results</h2>
 
       <div class="box headline">
         <div class="metric">
-          <img src="images/logo_co2.svg" alt="" width="48" height="48">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 17c4-9 14-9 18 0"/><path d="M3 21h18"/>
+            <circle cx="8.5" cy="9.5" r="2.2"/><circle cx="15.5" cy="9.5" r="2.2"/>
+          </svg>
           <div>
             <div class="metric-value" id="carbonEmissions_text">...</div>
             <div class="metric-label">Carbon footprint</div>
           </div>
         </div>
         <div class="metric">
-          <img src="images/logo_power_1.svg" alt="" width="48" height="48">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M13 2 4 14h7l-1 8 9-12h-7z"/>
+          </svg>
           <div>
             <div class="metric-value" id="energy_text">...</div>
             <div class="metric-label">Energy needed</div>
           </div>
         </div>
         <div class="metric">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 6 9 3 4 6v12l5 3 6-3 5 3V12"/><path d="M9 3v15M14 6v3M19 9v3"/>
+          </svg>
           <div>
             <div class="metric-value" id="manufacturing_text">...</div>
             <div class="metric-label">+ embodied (hardware manufacturing)</div>
@@ -198,24 +214,33 @@
       </div>
 
       <div class="box equivalents">
+        <p class="eyebrow">In perspective</p>
         <h2>Carbon sequestration &amp; equivalents</h2>
         <div class="metric-grid">
           <div class="metric">
-            <img src="images/logo_tree_1.svg" alt="" width="40" height="40">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 22v-8"/><path d="M12 14c-4 0-6-2.5-6-6 0-3.5 2.7-6 6-6s6 2.5 6 6c0 3.5-2 6-6 6z"/>
+              <path d="M9 9.5 12 12l3-2.5"/>
+            </svg>
             <div>
               <div class="metric-value" id="treeTime_text">...</div>
               <div class="metric-label">Carbon sequestration</div>
             </div>
           </div>
           <div class="metric">
-            <img src="images/logo_car_3.svg" alt="" width="40" height="40">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 13l2-5a3 3 0 0 1 2.8-2h8.4A3 3 0 0 1 19 8l2 5v5h-3v-2H6v2H3z"/>
+              <circle cx="7" cy="15.5" r="1.3"/><circle cx="17" cy="15.5" r="1.3"/>
+            </svg>
             <div>
               <div class="metric-value" id="driving_text">...</div>
               <div class="metric-label">in a passenger car (EU)</div>
             </div>
           </div>
           <div class="metric">
-            <img src="images/logo_plane_1.svg" alt="" width="40" height="40">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 16 13 11V4.5a1.5 1.5 0 0 0-3 0V11l-8 5v2l8-2.5V21l-2 1.5V24l3.5-1 3.5 1v-1.5L13 21v-5.5L21 18z"/>
+            </svg>
             <div>
               <div class="metric-value" id="flying_text">...</div>
               <div class="metric-label" id="flying_label">flights</div>
@@ -251,6 +276,7 @@
 
   <!-- ============ ABOUT ============ -->
   <section class="box wide">
+    <p class="eyebrow">Methodology</p>
     <h2>The formula</h2>
     <p>The carbon footprint is calculated by estimating the energy drawn by the algorithm
       and the carbon intensity of producing this energy at a given location:</p>
